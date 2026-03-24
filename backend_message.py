@@ -2,11 +2,11 @@ import flet as ft
 
 # Валидация для ввода сообщение
 # Включаем кнопку, если есть текст, иначе выключаем
-def validate(e, button_message):
+def validate(e, button):
     if e.control.value:
-        button_message.disabled = False
+        button.disabled = False
     else:
-        button_message.disabled = True
+        button.disabled = True
     
     # Обновляем страницу
     e.page.update()
@@ -102,8 +102,11 @@ def chat(user_name, text_chat, page, message_list):
 
     # Добавляем сообщение в список
     message_list.controls.append(message_row)
-    page.update()  # Исправлено: было page.page.update()
+    page.update()
 
 # Отправка сообщение
-def send_message(e):
-    print("+")
+def send_message(message_input):
+    print(f"{message_input.value}")
+
+
+    
