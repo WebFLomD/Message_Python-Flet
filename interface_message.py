@@ -1,7 +1,8 @@
 import flet as ft
-from backend_message import send_message, validate, chat
+from backend_message import sendMessage, validate, loadMessages
+from database import db
 
-def message_page (page: ft.Page, user_name, onLogout):
+def message_page (page: ft.Page, user_name, onLogout, user_id):
     page.title = "Чат - Мобильная версия"
     page.bgcolor = "#0E1621" # Фон приложения
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
@@ -11,6 +12,14 @@ def message_page (page: ft.Page, user_name, onLogout):
     page.window.height = 700
     page.window.resizable = False
 
+    # Определяем собеседника
+    if user_id == 1:  # Если текущий пользователь Алексей
+        other_user_id = 2  # То собеседник Анна
+        other_user_name = "Анна"
+    else:  # Если текущий пользователь Анна
+        other_user_id = 1  # То собеседник Алексей
+        other_user_name = "Алексей"
+    
     # Список сообщений
     message_list = ft.ListView(
         expand=True,
@@ -40,12 +49,22 @@ def message_page (page: ft.Page, user_name, onLogout):
     button_message = ft.IconButton(
         ft.Icons.SEND,
         disabled=True,
+
+        on_click=lambda e: sendMessage(
+            message_input,
+            other_user_id,
+            other_user_name,
+            message_list,
+            page,
+            db
+        )
     )
 
+    # Чат с пользователем
     header = ft.Row(
         [
             ft.Text(
-                "Чат",
+                f"Чат с {other_user_name}",
                 size=26,
                 color = ft.Colors.WHITE,
                 weight=ft.FontWeight.W_500
@@ -55,16 +74,13 @@ def message_page (page: ft.Page, user_name, onLogout):
         ],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN
     )
-    
-    button_message.on_click = lambda e: send_message(message_input)
 
     # Пример отображение сообщение
-    chat("Я", "Привет! Как дела? ыавываыва ываы ваыва ываываыва ываа", page, message_list)
-    chat("Анна", "Привет! Все хорошо! А у тебя? dfssdf sdfsdfsdf sdfsdfsdf sdfsdfs fsdfs ddffsdsfd", page, message_list)
-    chat("Я", "Привет! Как дела?", page, message_list)
+    # chat("Я", "Привет! Как дела? ыавываыва ываы ваыва ываываыва ываа", page, message_list)
+    # chat("Анна", "Привет! Все хорошо! А у тебя? dfssdf sdfsdfsdf sdfsdfsdf sdfsdfs fsdfs ddffsdsfd", page, message_list)
+    # chat("Я", "Привет! Как дела?", page, message_list)
+    loadMessages(other_user_id, message_list, db, page)
 
-
-    
     return ft.Column(
         [
             header,
@@ -74,6 +90,6 @@ def message_page (page: ft.Page, user_name, onLogout):
                 [message_input, button_message]
             )
         ],
-            expand=True
-        )
+        expand=True
+    )
     

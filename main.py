@@ -1,11 +1,12 @@
 import flet as ft
 from interface_auth import auth_page
 from interface_message import message_page
+from database import db
 
 def main(page: ft.Page):
     def show_message(user_name):
         page.clean()
-        page.add(message_page(page, user_name, lambda: show_auth()))
+        page.add(message_page(page, user_name, lambda: show_auth(), db.currentUserId))
         page.update()
 
     def show_auth():
