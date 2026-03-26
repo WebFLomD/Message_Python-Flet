@@ -1,4 +1,5 @@
 import flet as ft
+from datetime import datetime
 
 # Валидация для ввода сообщение
 # Включаем кнопку, если есть текст, иначе выключаем
@@ -12,7 +13,15 @@ def validate(e, button):
     e.page.update()
 
 # Отображение чата
-def chat(user_name, text_chat, page, message_list):
+""" Параметры:
+
+    - user_name: имя отправителя ("Я" или имя собеседника)
+    - text_chat: текст сообщения
+    - date_str: дата и время сообщения
+    - message_list: ListView куда добавлять сообщение
+    - page: страница для обновления
+"""
+def chat(user_name, text_chat, date_str, message_list, page):
     
     # Авто-адаптив сообщения по размеру
     if len(text_chat) < 20:
@@ -33,7 +42,7 @@ def chat(user_name, text_chat, page, message_list):
 
     # Дата отправления сообщения
     date_chat = ft.Text(
-        '13/02/26 10:00',
+        date_str,
         color=ft.Colors.GREEN_200, 
         size=10
     )
@@ -104,9 +113,43 @@ def chat(user_name, text_chat, page, message_list):
     message_list.controls.append(message_row)
     page.update()
 
-# Отправка сообщение
-def send_message(message_input):
-    print(f"{message_input.value}")
+# Отправляет сообщение в БД и отображает его
+def sendMessage(messageInput, currentChatUserId, currentChatUserName, messageList, page, db):
+    messageText = messageInput.value.strip()
+    if not messageText or not currentChatUserId:
+        return
 
+    # Отправляем в БД
+    if db.sendMessage(currentChatUserId, messageText):
+        # Очищаем поле ввода
+        messageInput.value = ""
 
-    
+        # Добавляем сообщение в чат
+        currentTime = datetime.now().strftime("%d/%m/%y %H:%M")
+        chat("Я", messageText, currentTime, messageList, page)
+
+        # Обновляем страницу
+        page.update()
+
+# Загружаем сообщенние в Чат
+def loadMessages(otherUserId, messageList, db, page):
+    messages = db.getMessage(otherUserId)
+    messageList.controls.clear()
+
+    for msg_id, from_id, to_id, message_text, date, from_name, to_name in messages:
+        # Определяем, чье сообщение
+            if from_id == db.currentUserId:
+                user_display = "Я"
+            else:
+                user_display = from_name
+            
+            # Форматируем дату
+            if isinstance(date, datetime):
+                date_str = date.strftime("%d/%m/%y %H:%M")
+            else:
+                date_str = str(date)[:16]
+            
+            # Добавляем сообщение в список
+            chat(user_display, message_text, date_str, messageList, page)
+        
+    page.update()

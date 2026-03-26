@@ -1,4 +1,5 @@
 import flet as ft
+from database import db
 
 # Валидация для ввода сообщение
 # Включаем кнопку, если есть текст, иначе выключаем
@@ -13,15 +14,21 @@ def validate(e, allFields, button):
     # Обновляем страницу
     e.page.update()
 
+# Проверка для авторизации
 def authUsers(username, password):
-    if username == "123" and password == "123":
-        return True
-    return False
+    result = db.checkLogin(username, password)
+
+    if result:
+        return True, result  # success=True, name=имя
+    else:
+        return False, None  # success=False, name=None
 
 def clickAuth(usernameField, passwordField, textError, onSuccess, e):
-    if authUsers(usernameField.value, passwordField.value):
-        print("Успешный вход!")
-        onSuccess(usernameField.value)
+    success, userName = authUsers(usernameField.value, passwordField.value)
+    
+    if success:
+        print(f"Успешный вход!")
+        onSuccess(userName)
     else:
         textError.value = "Неверный логин или пароль"
         textError.visible = True
